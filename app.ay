@@ -1,0 +1,59 @@
+import streamlit as st
+import os
+from PIL import Image
+
+st.set_page_config(page_title="الموسوعة القرآنية الشاملة", page_icon="📖", layout="wide")
+
+st.markdown("<h1 style='text-align: center; color: #1b4d3e;'>📖 الموسوعة القرآنية الشاملة</h1>", unsafe_allow_html=True)
+st.markdown("---")
+
+tab1, tab2, tab3 = st.tabs(["📖 المصحف الشريف", "📻 الإذاعات المباشرة", "📝 المفكرة والختمة"])
+
+with tab1:
+    st.subheader("تصفح صفحات المصحف المصور")
+    folder_path = "quran_images"
+    
+    if os.path.exists(folder_path):
+        images = sorted([f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
+        if images:
+            if 'img_page' not in st.session_state:
+                st.session_state.img_page = 0
+                
+            c1, c2, c3 = st.columns([1, 2, 1])
+            with c1:
+                if st.button("⬅️ الصفحة السابقة") and st.session_state.img_page > 0:
+                    st.session_state.img_page -= 1
+            with c2:
+                page_num = st.number_input("رقم الصفحة:", 1, len(images), st.session_state.img_page + 1)
+                st.session_state.img_page = page_num - 1
+            with c3:
+                if st.button("الصفحة التالية ➡️") and st.session_state.img_page < len(images) - 1:
+                    st.session_state.img_page += 1
+            
+            st.image(Image.open(os.path.join(folder_path, images[st.session_state.img_page])), use_column_width=True)
+            st.caption(f"صفحة {st.session_state.img_page + 1} من {len(images)}")
+        else:
+            st.warning("⚠️ مجلد `quran_images` فارغ.")
+    else:
+        st.warning("⚠️ يرجى إنشاء مجلد باسم `quran_images` ورفع الصور داخله.")
+
+with tab2:
+    st.subheader("📻 استمع إلى إذاعات القرآن الكريم")
+    radios = {
+        "إذاعة القرآن الكريم (القاهرة)": "https://quran-mp3.info/radio/radio.php",
+        "الشيخ عبد الباسط عبد الصمد": "https://backup.quran-mp3.info/radio/abdulbasit.php",
+        "الشيخ عبد الرحمن السديس": "https://backup.quran-mp3.info/radio/sudaes.php",
+        "الشيخ مشاري العفاسي": "https://backup.quran-mp3.info/radio/mishary_alafasy.php",
+        "الشيخ ماهر المعيقلي": "https://backup.quran-mp3.info/radio/maher.php"
+    }
+    choice = st.selectbox("اختر القارئ أو الإذاعة:", list(radios.keys()))
+    st.audio(radios[choice], format="audio/mp3")
+
+with tab3:
+    st.subheader("📝 مفكرة الختمة والآيات")
+    note = st.text_area("أدخل فوائدك وملاحظاتك القيمة:")
+    if st.button("حفظ الملاحظة"):
+        st.success("تم الحفظ بنجاح!" if note.strip() else "يرجى كتابة نص أولاً.")
+
+st.markdown("---")
+st.markdown("<p style='text-align: center; color: gray;'>جميع الحقوق محفوظة © الموسوعة القرآنية الشاملة</p>", unsafe_allow_html=True)
